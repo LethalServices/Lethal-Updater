@@ -13,7 +13,7 @@ def SendLog(text = None, msg_type = None):
 def get_download(url, filename):
     with requests.get(url, stream=True) as r:
         with open(filename, 'wb') as f:           
-            bar = tqdm(total=int(r.headers['Content-Length']))
+            bar = tqdm(total=int(r.headers['Content-Length']), colour='green', desc=f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [+] Downloading Update, Please Wait')
             for data in r.iter_content(chunk_size=8192):
                 if data:  
                     f.write(data)
