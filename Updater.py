@@ -2,6 +2,22 @@ import requests, os, shutil, sqlite3
 from datetime import datetime
 from colorama import Fore
 from zipfile import ZipFile
+from tqdm import *
+
+def SendLog(text = None, msg_type = None):
+    if msg_type == None:
+        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [+] {text}') 
+    elif msg_type == "Error":
+        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTRED_EX}Error{Fore.WHITE}] [+] {text}') 
+
+def get_download(url, filename):
+    with requests.get(url, stream=True) as r:
+        with open(filename, 'wb') as f:           
+            bar = tqdm(total=int(r.headers['Content-Length']))
+            for data in r.iter_content(chunk_size=8192):
+                if data:  
+                    f.write(data)
+                    bar.update(len(data))
 
 def Lethal_Install(LethalZip, install_path): 
     lethal_exe = f"{os.getcwd()}\\Lethal.exe"
@@ -13,36 +29,40 @@ def Lethal_Install(LethalZip, install_path):
     LethalDB = list(conn.execute(f"SELECT auth_token FROM auth;").fetchone()) 
     conn.cursor().close()
     conn.close()
+
     #Download Update
-    LethalDownload = requests.get(f"https://api.lethal.ml/lethal/{LethalDB[0]}") 
+    LethalDownload = requests.get() 
     if LethalDownload.status_code == 200:
-        with open("Lethal.zip", "wb") as LUpdate:
-            LUpdate.write(LethalDownload.content)
-            print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Lethal Update Downloaded!')           
+        get_download(f"https://api.lethal.ml/lethal/{LethalDB[0]}", "Lethal.zip")
+        SendLogs('Lethal Update Downloaded!')           
     else:
-        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Token Was Not Found ')
+        SendLogs('Token Was Not Found!', 'Error')
     
     #Cleanup Old Files
     if os.path.isfile(lethal_exe):                
         os.remove(lethal_exe)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Removed Lethal.exe')
+        SendLogs('Removed Lethal.exe.')
     if os.path.isfile(Lethal_db):                
         os.remove(Lethal_db)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Removed Lethal Database')
+        SendLogs('Removed Lethal Database.')
     if os.path.isdir(lethal_modules):
           shutil.rmtree(lethal_modules)
-          print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Removed Modules Directory') 
+          SendLogs('Removed Modules Directory.') 
     #Extact Update
     with ZipFile(LethalZip, 'r') as Lethal_Zip:
         Lethal_Zip.extractall(install_path)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Lethal Updated!')    
+        SendLogs('Lethal Updated!')    
     #Clean Up Update Zip     
     if os.path.isfile(LethalZip):
         os.remove(LethalZip)
-        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Removed Lethal.zip')    
+        SendLogs('Removed Lethal.zip.')    
     #Start Lethal
     if os.path.isfile(lethal_exe):
-        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Update Complete{Fore.WHITE}] [{Fore.LIGHTRED_EX}Alert{Fore.WHITE}] [+] Starting Lethal Now!')
+        SendLogs('Starting Lethal Now!')
         os.system(lethal_exe)
-           
-Lethal_Install(f"{os.getcwd()}\\Lethal.zip", os.getcwd())
+
+def main():
+    Lethal_Install(f"{os.getcwd()}\\Lethal.zip", os.getcwd())
+
+if __name__ == "__main__":
+	main()             
