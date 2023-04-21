@@ -2,9 +2,10 @@ import requests, os, shutil, sqlite3
 from datetime import datetime
 from colorama import Fore
 from zipfile import ZipFile
+from getpass import getpass
 from tqdm import *
 
-def SendLog(text = None, msg_type = None):
+def SendLogs(text = None, msg_type = None):
     if msg_type == None:
         print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [+] {text}') 
     elif msg_type == "Error":
@@ -24,43 +25,39 @@ def Lethal_Install(LethalZip, install_path):
     Lethal_db = f"{os.getcwd()}\\lethal.db"
     lethal_modules = f"{os.getcwd()}\\Modules"  
 
-    #Connection To Local Database
-    conn = sqlite3.connect(r"{}".format(os.path.join(os.getcwd(), "lethal.db")))
-    LethalDB = list(conn.execute(f"SELECT auth_token FROM auth;").fetchone()) 
-    conn.cursor().close()
-    conn.close()
-
+    #Get Token
+    token = getpass("Enter Your Lethal Key: ")
+    
     #Download Update
-    LethalDownload = requests.get() 
-    if LethalDownload.status_code == 200:
-        get_download(f"https://api.lethal.ml/lethal/{LethalDB[0]}", "Lethal.zip")
-        SendLogs('Lethal Update Downloaded!')           
+    LethalDownload = requests.get(f"https://api.lethals.org/login/{token}")
+    if LethalDownload.status_code == 200 and LethalDownload.json()["status"] == 200:
+        get_download(f"https://api.lethals.org/lethal/{token}", "Lethal.zip")
+        SendLogs('Lethal Update Downloaded!')    
+            #Cleanup Old Files
+        if os.path.isfile(lethal_exe):                
+            os.remove(lethal_exe)
+            SendLogs('Removed Lethal.exe.')
+        if os.path.isfile(Lethal_db):                
+            os.remove(Lethal_db)
+            SendLogs('Removed Lethal Database.')
+        if os.path.isdir(lethal_modules):
+              shutil.rmtree(lethal_modules)
+              SendLogs('Removed Modules Directory.') 
+        #Extact Update
+        with ZipFile(LethalZip, 'r') as Lethal_Zip:
+            Lethal_Zip.extractall(install_path)
+            SendLogs('Lethal Updated!')    
+        #Clean Up Update Zip     
+        if os.path.isfile(LethalZip):
+            os.remove(LethalZip)
+            SendLogs('Removed Lethal.zip.')    
+        #Start Lethal
+        if os.path.isfile(lethal_exe):
+            SendLogs('Starting Lethal Now!')
+            os.system(lethal_exe)       
     else:
         SendLogs('Token Was Not Found!', 'Error')
     
-    #Cleanup Old Files
-    if os.path.isfile(lethal_exe):                
-        os.remove(lethal_exe)
-        SendLogs('Removed Lethal.exe.')
-    if os.path.isfile(Lethal_db):                
-        os.remove(Lethal_db)
-        SendLogs('Removed Lethal Database.')
-    if os.path.isdir(lethal_modules):
-          shutil.rmtree(lethal_modules)
-          SendLogs('Removed Modules Directory.') 
-    #Extact Update
-    with ZipFile(LethalZip, 'r') as Lethal_Zip:
-        Lethal_Zip.extractall(install_path)
-        SendLogs('Lethal Updated!')    
-    #Clean Up Update Zip     
-    if os.path.isfile(LethalZip):
-        os.remove(LethalZip)
-        SendLogs('Removed Lethal.zip.')    
-    #Start Lethal
-    if os.path.isfile(lethal_exe):
-        SendLogs('Starting Lethal Now!')
-        os.system(lethal_exe)
-
 def main():
     Lethal_Install(f"{os.getcwd()}\\Lethal.zip", os.getcwd())
 
