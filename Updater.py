@@ -26,7 +26,7 @@ def Lethal_Install(LethalZip, install_path):
     lethal_modules = f"{os.getcwd()}\\Modules"  
 
     #Get Token
-    token = getpass("Enter Your Lethal Key: ")
+    token = getpass(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTGREEN_EX}Info{Fore.WHITE}] [+] Enter Your {Fore.LIGHTMAGENTA_EX}Lethal{Fore.WHITE} Token ({Fore.LIGHTGREEN_EX}Right-Click To Paste {Fore.WHITE}|{Fore.LIGHTGREEN_EX} Token Will Not Show{Fore.WHITE}): ')
     
     #Download Update
     LethalDownload = requests.get(f"https://api.lethals.org/login/{token}")
