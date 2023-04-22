@@ -10,6 +10,8 @@ def SendLogs(text = None, msg_type = None):
         print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [+] {text}') 
     elif msg_type == "Error":
         print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTRED_EX}Error{Fore.WHITE}] [+] {text}') 
+    elif msg_type == "Auth":
+        return getpass(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTGREEN_EX}Info{Fore.WHITE}] [+] {text}')
 
 def get_download(url, filename):
     with requests.get(url, stream=True) as r:
@@ -26,7 +28,7 @@ def Lethal_Install(LethalZip, install_path):
     lethal_modules = f"{os.getcwd()}\\Modules"  
 
     #Get Token
-    token = getpass(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTGREEN_EX}Info{Fore.WHITE}] [+] Enter Your {Fore.LIGHTMAGENTA_EX}Lethal{Fore.WHITE} Token ({Fore.LIGHTGREEN_EX}Right-Click To Paste {Fore.WHITE}|{Fore.LIGHTGREEN_EX} Token Will Not Show{Fore.WHITE}): ')
+    token = SendLogs(f'Enter Your {Fore.LIGHTMAGENTA_EX}Lethal{Fore.WHITE} Token ({Fore.LIGHTGREEN_EX}Right-Click To Paste {Fore.WHITE}|{Fore.LIGHTGREEN_EX} Token Will Not Show{Fore.WHITE}):', 'Auth')
     
     #Download Update
     LethalDownload = requests.get(f"https://api.lethals.org/login/{token}")
