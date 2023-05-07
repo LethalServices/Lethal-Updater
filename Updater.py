@@ -12,11 +12,13 @@ def SendLogs(text = None, msg_type = None):
         print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTRED_EX}Error{Fore.WHITE}] [+] {text}') 
     elif msg_type == "Auth":
         return getpass(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.LIGHTGREEN_EX}Info{Fore.WHITE}] [+] {text}')
+    elif msg_type == "AuthError":
+        print(f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [{Fore.LIGHTMAGENTA_EX}Lethal Auth Error{Fore.WHITE}] [+] {text}')
 
 def get_download(url, filename):
     with requests.get(url, stream=True) as r:
         with open(filename, 'wb') as f:           
-            bar = tqdm(total=int(r.headers['Content-Length']), colour='green', desc=f'[{datetime.now().strftime("%H:%M:%S")}] [{Fore.GREEN}Info{Fore.WHITE}] [+] Downloading Update, Please Wait')
+            bar = tqdm(total=int(r.headers['Content-Length']), colour='green', desc=SendLogs('Downloading Update, Please Wait'))
             for data in r.iter_content(chunk_size=8192):
                 if data:  
                     f.write(data)
@@ -29,11 +31,11 @@ def Lethal_Install(LethalZip, install_path):
 
     #Get Token
     token = SendLogs(f'Enter Your {Fore.LIGHTMAGENTA_EX}Lethal{Fore.WHITE} Token ({Fore.LIGHTGREEN_EX}Right-Click To Paste {Fore.WHITE}|{Fore.LIGHTGREEN_EX} Token Will Not Show{Fore.WHITE}):', 'Auth')
-    
+
     #Download Update
-    LethalDownload = requests.get(f"https://api.lethals.org/login/{token}")
+    LethalDownload = requests.get(f"https://lethals.org/api/login/{token}")
     if LethalDownload.status_code == 200 and LethalDownload.json()["status"] == 200:
-        get_download(f"https://api.lethals.org/lethal/{token}", "Lethal.zip")
+        get_download(f"https://lethals.org/api/lethal/{token}", "Lethal.zip")
         SendLogs('Lethal Update Downloaded!')    
             #Cleanup Old Files
         if os.path.isfile(lethal_exe):                
